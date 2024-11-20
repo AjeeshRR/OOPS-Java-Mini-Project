@@ -1,0 +1,130 @@
+package ajeesh;
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import javax.swing.JOptionPane;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class AddUser extends javax.swing.JFrame {
+    
+    public AddUser() {
+        initComponents();
+        centerFrame();  // Set frame in the center of the screen
+    }
+    
+    private void centerFrame() {
+        Toolkit toolkit = getToolkit();
+        Dimension size = toolkit.getScreenSize();
+        setLocation((size.width / 2 - getWidth() / 2), (size.height / 2 - getHeight() / 2));
+    }
+
+    private void initComponents() {
+
+        lbl_username = new javax.swing.JLabel();
+        lbl_password = new javax.swing.JLabel();
+        lbl_userType = new javax.swing.JLabel();
+        txt_username = new javax.swing.JTextField();
+        txt_password = new javax.swing.JPasswordField();
+        cmb_userType = new javax.swing.JComboBox<>();
+        btn_addUser = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Add New User");
+
+        lbl_username.setText("Username:");
+        lbl_password.setText("Password:");
+        lbl_userType.setText("User Type:");
+
+        cmb_userType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Manager", "Billing executive" }));
+
+        btn_addUser.setText("Add User");
+        btn_addUser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_addUserActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbl_username)
+                    .addComponent(lbl_password)
+                    .addComponent(lbl_userType))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txt_username)
+                    .addComponent(txt_password)
+                    .addComponent(cmb_userType, 0, 150, Short.MAX_VALUE)
+                    .addComponent(btn_addUser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(30, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbl_username)
+                    .addComponent(txt_username, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbl_password)
+                    .addComponent(txt_password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbl_userType)
+                    .addComponent(cmb_userType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(btn_addUser)
+                .addContainerGap(20, Short.MAX_VALUE))
+        );
+
+        pack();
+    }
+
+    private void btn_addUserActionPerformed(java.awt.event.ActionEvent evt) {
+        String username = txt_username.getText();
+        String password = new String(txt_password.getPassword());
+        String userType = cmb_userType.getSelectedItem().toString();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bakery", "root", null);
+            String sql = "INSERT INTO user (uName, uPassword, employee_eId, uActive, uType) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            stmt.setInt(3, 1); // Assuming `employee_eId` is set to 1 by default
+            stmt.setString(4, "Yes");
+            stmt.setString(5, userType);
+
+            int rowsInserted = stmt.executeUpdate();
+            if (rowsInserted > 0) {
+                JOptionPane.showMessageDialog(this, "User added successfully!");
+                this.dispose();  // Close the AddUser form
+            }
+            stmt.close();
+            conn.close();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error adding user: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private javax.swing.JButton btn_addUser;
+    private javax.swing.JComboBox<String> cmb_userType;
+    private javax.swing.JLabel lbl_password;
+    private javax.swing.JLabel lbl_userType;
+    private javax.swing.JLabel lbl_username;
+    private javax.swing.JPasswordField txt_password;
+    private javax.swing.JTextField txt_username;                   
+}
